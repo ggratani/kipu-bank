@@ -1,28 +1,93 @@
-REMIX DEFAULT WORKSPACE
 
-Remix default workspace is present when:
-i. Remix loads for the very first time 
-ii. A new workspace is created with 'Default' template
-iii. There are no files existing in the File Explorer
+## Cómo desplegar con Remix (Sepolia)
 
-This workspace contains 3 directories:
+**Requisitos**:
+- **MetaMask** configurado en **Sepolia** (con ETH de faucet).
+- Navegador con acceso a **https://remix.ethereum.org**.
 
-1. 'contracts': Holds three contracts with increasing levels of complexity.
-2. 'scripts': Contains four typescript files to deploy a contract. It is explained below.
-3. 'tests': Contains one Solidity test file for 'Ballot' contract & one JS test file for 'Storage' contract.
+**Pasos**:
+1. Abrí **https://remix.ethereum.org**.
+2. En **File Explorer** → **Create New File** → `contracts/KipuBank.sol`.
+3. El contenido del contrato esta en `KipuBank.sol` (este repo lo contiene en `/contracts`).
+4. Abrí **Solidity Compiler**:
+   - Versión: **0.8.24**.
+   - **Optimizer**: *No* (para simplificar verificación), o **Yes** con *runs=200* si preferís.
+   - Clic en **Compile KipuBank.sol**.
+5. Abrí **Deploy & Run Transactions**:
+   - **Environment**: **Injected Provider – MetaMask**.
+   - Red: **Sepolia**.
+   - **Contract**: `KipuBank - contracts/KipuBank.sol`.
+   - **Constructor args** (en **wei**, enteros):
+     - `withdrawalThreshold` = `50000000000000000`  (0.05 ETH)
+     - `bankCap`            = `5000000000000000000` (5 ETH)
+   - Clic **Deploy** y confirmá en MetaMask.
+6. Copiá la **dirección del contrato** (aparece en Remix y en el explorer de la tx).
 
-SCRIPTS
+> Si querés otros valores, convertí ETH→wei (1 ETH = 1e18 wei).  
+> Ejemplo: 0.2 ETH → `200000000000000000`.
 
-The 'scripts' folder has four typescript files which help to deploy the 'Storage' contract using 'web3.js' and 'ethers.js' libraries.
+---
 
-For the deployment of any other contract, just update the contract name from 'Storage' to the desired contract and provide constructor arguments accordingly 
-in the file `deploy_with_ethers.ts` or  `deploy_with_web3.ts`
+## Verificación del código en Etherscan
 
-In the 'tests' folder there is a script containing Mocha-Chai unit tests for 'Storage' contract.
+1. Abrí tu address en **https://sepolia.etherscan.io**.
+2. Pestaña **Contract** → **Verify and Publish**.
+3. **Compiler**: **0.8.24** (exactamente la usada en Remix).
+4. **License**: **MIT**.
+5. **Optimization**:
+   - Marca **No** si no usaste optimizer en Remix.
+   - Marca **Yes** y poné **200** runs si lo activaste al compilar.
+6. Modo: **Single file** y pegá tu `KipuBank.sol`.
+7. **Constructor arguments**: pegá **exactamente**:
+   - `50000000000000000`
+   - `5000000000000000000`
+8. Confirmá. Si todo coincide, el contrato queda **Verified**.
 
-To run a script, right click on file name in the file explorer and click 'Run'. Remember, Solidity file must already be compiled.
-Output from script will appear in remix terminal.
+---
 
-Please note, require/import is supported in a limited manner for Remix supported modules.
-For now, modules supported by Remix are ethers, web3, swarmgw, chai, multihashes, remix and hardhat only for hardhat.ethers object/plugin.
-For unsupported modules, an error like this will be thrown: '<module_name> module require is not supported by Remix IDE' will be shown.
+## Cómo interactuar (Remix)
+
+Con el contrato desplegado, en **Deployed Contracts** (Remix):
+
+- **Depositar**  
+  En el campo **Value** (arriba de los botones), poné por ejemplo `0.02 ether` o `20000000000000000` (wei).  
+  Clic en **deposit()** → confirmá en MetaMask → mirá el evento `Deposited`.
+
+- **Consultar saldo**  
+  `vaultOf(<tuAddress>)` → devuelve el saldo en **wei**.
+
+- **Retirar**  
+  `withdraw(<amountWei>)` cuidando:
+  - `amountWei` > 0
+  - `amountWei` ≤ `WITHDRAWAL_THRESHOLD` (0.05 ETH por nuestra config)
+  - `amountWei` ≤ tu saldo (`vaultOf`)
+  
+  Ejemplo: `withdraw(10000000000000000)` (0.01 ETH).  
+  Mirá el evento `Withdrawn`.
+
+**Errores esperados**:
+- `ExceedsThreshold`: si intentás retirar > 0.05 ETH (con esta config).
+- `InsufficientFunds`: si el monto supera tu saldo.
+- `ExceedsBankCap`: si un depósito haría superar el tope global.
+- `ZeroAmount`: si pasás 0 como monto (withdraw) o intentás depositar 0.
+- `Reentrancy`: protección si hay intento de reingreso.
+
+---
+
+## Dirección desplegada
+- Red: Sepolia
+- Address: <PEGA_ACÁ_TU_ADDRESS>
+- Verificado: <PEGA_ACÁ_LINK_#code>
+
+## Parámetros de constructor (wei)
+- withdrawalThreshold: 50000000000000000   # 0.05 ETH
+- bankCap:            5000000000000000000  # 5 ETH
+
+## Compilación/Verificación
+- Solidity: 0.8.24
+- Optimizer: No  (usa Yes + runs=200 si lo activaste en Remix)
+
+
+## Licencia
+
+**MIT**
