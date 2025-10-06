@@ -76,8 +76,8 @@ Con el contrato desplegado, en **Deployed Contracts** (Remix):
 
 ## Dirección desplegada
 - Red: Sepolia
-- Address: <PEGA_ACÁ_TU_ADDRESS>
-- Verificado: <PEGA_ACÁ_LINK_#code>
+- Address: 0xaa8ca49e91216d04ed51587232052d3f6bf4c830
+- Verificado: https://testnet.routescan.io/address/0xaa8ca49e91216d04ed51587232052d3f6bf4c830/contract/11155111/code
 
 ## Parámetros de constructor (wei)
 - withdrawalThreshold: 50000000000000000   # 0.05 ETH
